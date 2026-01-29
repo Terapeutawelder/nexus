@@ -43,6 +43,8 @@ interface SettingsScreenProps {
   usedMessages: number;
   isActivated: boolean;
   onActivate: (activated: boolean) => void;
+  licenseKey: string;
+  onLicenseKeyChange: (key: string) => void;
 }
 
 const planLimits: Record<string, number> = {
@@ -65,15 +67,19 @@ const SettingsScreen = ({
   onSelectPlan, 
   usedMessages,
   isActivated,
-  onActivate 
+  onActivate,
+  licenseKey: externalLicenseKey,
+  onLicenseKeyChange
 }: SettingsScreenProps) => {
   const [activeTab, setActiveTab] = useState<"license" | "plans" | "repos" | "webhooks">("license");
   const [newRepoUrl, setNewRepoUrl] = useState("");
   const [newWebhookUrl, setNewWebhookUrl] = useState("");
   const [newWebhookName, setNewWebhookName] = useState("");
-  const [licenseKey, setLicenseKey] = useState("");
+  const [licenseKey, setLicenseKey] = useState(externalLicenseKey);
   const [showKey, setShowKey] = useState(false);
-  const [licenseStatus, setLicenseStatus] = useState<"idle" | "valid" | "invalid">("idle");
+  const [licenseStatus, setLicenseStatus] = useState<"idle" | "valid" | "invalid">(
+    externalLicenseKey.length >= 16 ? "valid" : "idle"
+  );
 
   const [repositories, setRepositories] = useState<Repository[]>([
     { id: "1", name: "lovable-project", url: "https://github.com/user/lovable-project", connected: true },
@@ -89,6 +95,7 @@ const SettingsScreen = ({
     if (licenseKey.length >= 16) {
       setLicenseStatus("valid");
       onActivate(true);
+      onLicenseKeyChange(licenseKey);
     } else {
       setLicenseStatus("invalid");
     }

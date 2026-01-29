@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ExtensionHeader from "@/components/ExtensionHeader";
 import SyncStatus from "@/components/SyncStatus";
 import ExtensionFooter from "@/components/ExtensionFooter";
@@ -12,13 +12,50 @@ const planLimits: Record<string, number> = {
   premium: 1000,
 };
 
+const STORAGE_KEY = "nexus_settings";
+
+interface StoredSettings {
+  selectedPlan: string;
+  isActivated: boolean;
+  licenseKey: string;
+  usedMessages: number;
+}
+
+const getStoredSettings = (): StoredSettings => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error("Error reading from localStorage:", e);
+  }
+  return {
+    selectedPlan: "free",
+    isActivated: false,
+    licenseKey: "",
+    usedMessages: 3,
+  };
+};
+
 const Index = () => {
   const [showSettings, setShowSettings] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState("free");
-  const [usedMessages, setUsedMessages] = useState(3);
-  const [isActivated, setIsActivated] = useState(true); // License activated state
+  const [settings, setSettings] = useState<StoredSettings>(getStoredSettings);
 
-  const totalMessages = planLimits[selectedPlan];
+  // Save to localStorage whenever settings change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    } catch (e) {
+      console.error("Error saving to localStorage:", e);
+    }
+  }, [settings]);
+
+  const totalMessages = planLimits[settings.selectedPlan];
+
+  const updateSettings = (updates: Partial<StoredSettings>) => {
+    setSettings(prev => ({ ...prev, ...updates }));
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 gradient-dark">
@@ -27,16 +64,18 @@ const Index = () => {
         {showSettings ? (
           <SettingsScreen 
             onClose={() => setShowSettings(false)} 
-            selectedPlan={selectedPlan}
-            onSelectPlan={setSelectedPlan}
-            usedMessages={usedMessages}
-            isActivated={isActivated}
-            onActivate={setIsActivated}
+            selectedPlan={settings.selectedPlan}
+            onSelectPlan={(plan) => updateSettings({ selectedPlan: plan })}
+            usedMessages={settings.usedMessages}
+            isActivated={settings.isActivated}
+            onActivate={(activated) => updateSettings({ isActivated: activated })}
+            licenseKey={settings.licenseKey}
+            onLicenseKeyChange={(key) => updateSettings({ licenseKey: key })}
           />
         ) : (
           <>
             <ExtensionHeader />
-            <SyncStatus usedMessages={usedMessages} totalMessages={totalMessages} />
+            <SyncStatus usedMessages={settings.usedMessages} totalMessages={totalMessages} />
             <ChatInput />
             <ExtensionFooter onSettingsClick={() => setShowSettings(true)} />
           </>
