@@ -1,11 +1,19 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import ExtensionHeader from "@/components/ExtensionHeader";
+import LicenseKeyInput from "@/components/LicenseKeyInput";
+import SyncStatus from "@/components/SyncStatus";
+import PricingPlans from "@/components/PricingPlans";
+import ExtensionFooter from "@/components/ExtensionFooter";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen flex items-center justify-center p-6 gradient-dark">
+      {/* Extension popup container */}
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-card overflow-hidden">
+        <ExtensionHeader />
+        <LicenseKeyInput />
+        <SyncStatus />
+        <PricingPlans />
+        <ExtensionFooter />
       </div>
     </div>
   );
