@@ -6,15 +6,20 @@ import {
   Plus, 
   Trash2, 
   Check, 
-  X, 
+  Key, 
   Link2,
   ExternalLink,
-  ChevronLeft
+  ChevronLeft,
+  Crown,
+  Eye,
+  EyeOff,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
 interface Repository {
   id: string;
@@ -33,13 +38,42 @@ interface WebhookConfig {
 
 interface SettingsScreenProps {
   onClose: () => void;
+  selectedPlan: string;
+  onSelectPlan: (plan: string) => void;
+  usedMessages: number;
+  isActivated: boolean;
+  onActivate: (activated: boolean) => void;
 }
 
-const SettingsScreen = ({ onClose }: SettingsScreenProps) => {
-  const [activeTab, setActiveTab] = useState<"repos" | "webhooks">("repos");
+const planLimits: Record<string, number> = {
+  free: 5,
+  pro: 250,
+  plus: 500,
+  premium: 1000,
+};
+
+const plans = [
+  { id: "free", name: "Gratuito", messages: 5, price: null },
+  { id: "pro", name: "Pro", messages: 250, price: "R$ 29,80" },
+  { id: "plus", name: "Plus", messages: 500, price: "R$ 49,90" },
+  { id: "premium", name: "Premium", messages: 1000, price: "R$ 79,80" },
+];
+
+const SettingsScreen = ({ 
+  onClose, 
+  selectedPlan, 
+  onSelectPlan, 
+  usedMessages,
+  isActivated,
+  onActivate 
+}: SettingsScreenProps) => {
+  const [activeTab, setActiveTab] = useState<"license" | "plans" | "repos" | "webhooks">("license");
   const [newRepoUrl, setNewRepoUrl] = useState("");
   const [newWebhookUrl, setNewWebhookUrl] = useState("");
   const [newWebhookName, setNewWebhookName] = useState("");
+  const [licenseKey, setLicenseKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [licenseStatus, setLicenseStatus] = useState<"idle" | "valid" | "invalid">("idle");
 
   const [repositories, setRepositories] = useState<Repository[]>([
     { id: "1", name: "lovable-project", url: "https://github.com/user/lovable-project", connected: true },
@@ -50,6 +84,15 @@ const SettingsScreen = ({ onClose }: SettingsScreenProps) => {
     { id: "1", name: "Deploy Hook", url: "https://api.example.com/deploy", enabled: true, events: ["push", "merge"] },
     { id: "2", name: "Notification", url: "https://api.example.com/notify", enabled: false, events: ["push"] },
   ]);
+
+  const handleActivateLicense = () => {
+    if (licenseKey.length >= 16) {
+      setLicenseStatus("valid");
+      onActivate(true);
+    } else {
+      setLicenseStatus("invalid");
+    }
+  };
 
   const addRepository = () => {
     if (!newRepoUrl.trim()) return;
@@ -91,6 +134,10 @@ const SettingsScreen = ({ onClose }: SettingsScreenProps) => {
     setWebhooks(webhooks.filter(webhook => webhook.id !== id));
   };
 
+  const currentPlan = plans.find(p => p.id === selectedPlan);
+  const totalMessages = planLimits[selectedPlan];
+  const usagePercent = (usedMessages / totalMessages) * 100;
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -110,30 +157,54 @@ const SettingsScreen = ({ onClose }: SettingsScreenProps) => {
       </div>
 
       {/* Tabs */}
-      <div className="px-6 py-3 border-b border-border">
+      <div className="px-6 py-3 border-b border-border overflow-x-auto">
         <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab("license")}
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              activeTab === "license" 
+                ? "bg-primary text-primary-foreground" 
+                : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Key className="w-3.5 h-3.5" />
+            Licença
+          </button>
+          <button
+            onClick={() => setActiveTab("plans")}
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              activeTab === "plans" 
+                ? "bg-primary text-primary-foreground" 
+                : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Crown className="w-3.5 h-3.5" />
+            Planos
+          </button>
           <button
             onClick={() => setActiveTab("repos")}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
               activeTab === "repos" 
                 ? "bg-primary text-primary-foreground" 
                 : "bg-secondary/50 text-muted-foreground hover:text-foreground"
             )}
           >
-            <Github className="w-4 h-4" />
-            Repositórios
+            <Github className="w-3.5 h-3.5" />
+            Repos
           </button>
           <button
             onClick={() => setActiveTab("webhooks")}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
               activeTab === "webhooks" 
                 ? "bg-primary text-primary-foreground" 
                 : "bg-secondary/50 text-muted-foreground hover:text-foreground"
             )}
           >
-            <Webhook className="w-4 h-4" />
+            <Webhook className="w-3.5 h-3.5" />
             Webhooks
           </button>
         </div>
@@ -141,6 +212,131 @@ const SettingsScreen = ({ onClose }: SettingsScreenProps) => {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-6 py-4">
+        {/* License Tab */}
+        {activeTab === "license" && (
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-secondary/30 border border-border space-y-3">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                  <Key className="w-4 h-4 text-accent" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Chave de Licença</h3>
+                  <p className="text-xs text-muted-foreground">Ative sua licença para desbloquear recursos</p>
+                </div>
+              </div>
+
+              <div className="relative">
+                <Input
+                  type={showKey ? "text" : "password"}
+                  placeholder="XXXX-XXXX-XXXX-XXXX"
+                  value={licenseKey}
+                  onChange={(e) => {
+                    setLicenseKey(e.target.value);
+                    setLicenseStatus("idle");
+                  }}
+                  className="pr-10 bg-secondary/50 border-border text-foreground placeholder:text-muted-foreground font-mono text-sm tracking-wider"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey(!showKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              <Button
+                onClick={handleActivateLicense}
+                className="w-full gradient-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity"
+              >
+                Ativar Licença
+              </Button>
+
+              {licenseStatus === "valid" && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/30">
+                  <Check className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-medium text-primary">Licença ativada com sucesso!</span>
+                </div>
+              )}
+
+              {licenseStatus === "invalid" && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/30">
+                  <AlertCircle className="w-4 h-4 text-destructive" />
+                  <span className="text-xs font-medium text-destructive">Chave inválida. Verifique e tente novamente.</span>
+                </div>
+              )}
+            </div>
+
+            {isActivated && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/30">
+                <Check className="w-4 h-4 text-primary" />
+                <span className="text-xs font-medium text-primary">Extensão ativada</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Plans Tab */}
+        {activeTab === "plans" && (
+          <div className="space-y-4">
+            {/* Current Plan Summary */}
+            <div className="p-4 rounded-xl bg-secondary/30 border border-border space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">Plano Atual</span>
+                </div>
+                <span className="text-sm font-bold text-primary">{currentPlan?.name}</span>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Mensagens usadas</span>
+                  <span className="text-foreground font-medium">{usedMessages} / {totalMessages}</span>
+                </div>
+                <Progress value={usagePercent} className="h-2" />
+              </div>
+            </div>
+
+            {/* Plan Options */}
+            <div className="space-y-2">
+              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Escolha seu plano
+              </h3>
+              {plans.map((plan) => (
+                <button
+                  key={plan.id}
+                  onClick={() => onSelectPlan(plan.id)}
+                  className={cn(
+                    "w-full p-3 rounded-lg border transition-all text-left",
+                    selectedPlan === plan.id
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-secondary/30 hover:border-primary/50"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{plan.name}</p>
+                      <p className="text-xs text-muted-foreground">{plan.messages} mensagens/mês</p>
+                    </div>
+                    <div className="text-right">
+                      {plan.price ? (
+                        <p className="text-sm font-bold text-primary">{plan.price}</p>
+                      ) : (
+                        <p className="text-sm font-medium text-muted-foreground">Grátis</p>
+                      )}
+                      {selectedPlan === plan.id && (
+                        <Check className="w-4 h-4 text-primary ml-auto mt-1" />
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {activeTab === "repos" && (
           <div className="space-y-4">
             {/* Add new repo */}

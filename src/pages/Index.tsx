@@ -1,8 +1,6 @@
 import { useState } from "react";
 import ExtensionHeader from "@/components/ExtensionHeader";
-import LicenseKeyInput from "@/components/LicenseKeyInput";
 import SyncStatus from "@/components/SyncStatus";
-import PlanSelector from "@/components/PlanSelector";
 import ExtensionFooter from "@/components/ExtensionFooter";
 import SettingsScreen from "@/components/SettingsScreen";
 import ChatInput from "@/components/ChatInput";
@@ -18,25 +16,27 @@ const Index = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("free");
   const [usedMessages, setUsedMessages] = useState(3);
+  const [isActivated, setIsActivated] = useState(true); // License activated state
 
   const totalMessages = planLimits[selectedPlan];
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 gradient-dark">
       {/* Extension popup container */}
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-card overflow-hidden">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-card overflow-hidden flex flex-col">
         {showSettings ? (
-          <SettingsScreen onClose={() => setShowSettings(false)} />
+          <SettingsScreen 
+            onClose={() => setShowSettings(false)} 
+            selectedPlan={selectedPlan}
+            onSelectPlan={setSelectedPlan}
+            usedMessages={usedMessages}
+            isActivated={isActivated}
+            onActivate={setIsActivated}
+          />
         ) : (
           <>
             <ExtensionHeader />
-            <LicenseKeyInput />
             <SyncStatus usedMessages={usedMessages} totalMessages={totalMessages} />
-            <PlanSelector 
-              selectedPlan={selectedPlan} 
-              onSelectPlan={setSelectedPlan} 
-              usedMessages={usedMessages}
-            />
             <ChatInput />
             <ExtensionFooter onSettingsClick={() => setShowSettings(true)} />
           </>
