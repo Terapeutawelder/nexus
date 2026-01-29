@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { RefreshCw, CheckCircle2, Clock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -55,22 +56,29 @@ const SyncStatus = ({ usedMessages, totalMessages }: SyncStatusProps) => {
   const percentage = (usedMessages / totalMessages) * 100;
 
   return (
-    <div className="px-6 py-5 border-b border-border">
+    <motion.div 
+      className="px-6 py-5 border-b border-border"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, delay: 0.1 }}
+    >
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-sm font-semibold text-foreground">Sincronização</h2>
           <p className="text-xs text-muted-foreground">{usedMessages}/{totalMessages} mensagens usadas</p>
         </div>
         
-        <Button
-          onClick={handleSync}
-          size="sm"
-          disabled={isSyncing}
-          className="gradient-primary text-primary-foreground hover:opacity-90"
-        >
-          <RefreshCw className={cn("w-4 h-4 mr-1.5", isSyncing && "animate-spin")} />
-          {isSyncing ? "Sincronizando..." : "Sincronizar"}
-        </Button>
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Button
+            onClick={handleSync}
+            size="sm"
+            disabled={isSyncing}
+            className="gradient-primary text-primary-foreground hover:opacity-90"
+          >
+            <RefreshCw className={cn("w-4 h-4 mr-1.5", isSyncing && "animate-spin")} />
+            {isSyncing ? "Sincronizando..." : "Sincronizar"}
+          </Button>
+        </motion.div>
       </div>
 
       {/* Progress bar */}
@@ -80,9 +88,11 @@ const SyncStatus = ({ usedMessages, totalMessages }: SyncStatusProps) => {
           <span className="text-foreground font-medium">{usedMessages}/{totalMessages}</span>
         </div>
         <div className="h-2 rounded-full bg-secondary overflow-hidden">
-          <div 
-            className="h-full rounded-full gradient-primary transition-all duration-500"
-            style={{ width: `${percentage}%` }}
+          <motion.div 
+            className="h-full rounded-full gradient-primary"
+            initial={{ width: 0 }}
+            animate={{ width: `${percentage}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           />
         </div>
       </div>
@@ -90,10 +100,13 @@ const SyncStatus = ({ usedMessages, totalMessages }: SyncStatusProps) => {
       {/* Recent syncs */}
       <div className="space-y-2">
         <span className="text-xs font-medium text-muted-foreground">Atividade recente</span>
-        {recentSyncs.map((sync) => (
-          <div
+        {recentSyncs.map((sync, index) => (
+          <motion.div
             key={sync.id}
             className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/30 border border-border"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 + index * 0.1 }}
           >
             <div className="flex items-center gap-2.5">
               {sync.status === "success" && (
@@ -115,10 +128,10 @@ const SyncStatus = ({ usedMessages, totalMessages }: SyncStatusProps) => {
             </div>
             
             <span className="text-[10px] text-muted-foreground">{sync.time}</span>
-          </div>
+          </motion.div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

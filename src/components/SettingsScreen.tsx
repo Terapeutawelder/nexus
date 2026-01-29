@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Settings, 
   Github, 
@@ -146,7 +147,13 @@ const SettingsScreen = ({
   const usagePercent = (usedMessages / totalMessages) * 100;
 
   return (
-    <div className="flex flex-col h-full">
+    <motion.div 
+      className="flex flex-col h-full"
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 100 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
       {/* Header */}
       <div className="px-6 py-4 border-b border-border flex items-center gap-3">
         <button 
@@ -511,7 +518,7 @@ const SettingsScreen = ({
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

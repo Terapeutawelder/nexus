@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import ExtensionHeader from "@/components/ExtensionHeader";
 import SyncStatus from "@/components/SyncStatus";
 import ExtensionFooter from "@/components/ExtensionFooter";
@@ -61,25 +62,34 @@ const Index = () => {
     <div className="min-h-screen flex items-center justify-center p-6 gradient-dark">
       {/* Extension popup container */}
       <div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-card overflow-hidden flex flex-col">
-        {showSettings ? (
-          <SettingsScreen 
-            onClose={() => setShowSettings(false)} 
-            selectedPlan={settings.selectedPlan}
-            onSelectPlan={(plan) => updateSettings({ selectedPlan: plan })}
-            usedMessages={settings.usedMessages}
-            isActivated={settings.isActivated}
-            onActivate={(activated) => updateSettings({ isActivated: activated })}
-            licenseKey={settings.licenseKey}
-            onLicenseKeyChange={(key) => updateSettings({ licenseKey: key })}
-          />
-        ) : (
-          <>
-            <ExtensionHeader />
-            <SyncStatus usedMessages={settings.usedMessages} totalMessages={totalMessages} />
-            <ChatInput />
-            <ExtensionFooter onSettingsClick={() => setShowSettings(true)} />
-          </>
-        )}
+        <AnimatePresence mode="wait">
+          {showSettings ? (
+            <SettingsScreen 
+              key="settings"
+              onClose={() => setShowSettings(false)} 
+              selectedPlan={settings.selectedPlan}
+              onSelectPlan={(plan) => updateSettings({ selectedPlan: plan })}
+              usedMessages={settings.usedMessages}
+              isActivated={settings.isActivated}
+              onActivate={(activated) => updateSettings({ isActivated: activated })}
+              licenseKey={settings.licenseKey}
+              onLicenseKeyChange={(key) => updateSettings({ licenseKey: key })}
+            />
+          ) : (
+            <motion.div
+              key="main"
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              <ExtensionHeader />
+              <SyncStatus usedMessages={settings.usedMessages} totalMessages={totalMessages} />
+              <ChatInput />
+              <ExtensionFooter onSettingsClick={() => setShowSettings(true)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
