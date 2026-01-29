@@ -2,9 +2,10 @@ import { useState } from "react";
 import ExtensionHeader from "@/components/ExtensionHeader";
 import LicenseKeyInput from "@/components/LicenseKeyInput";
 import SyncStatus from "@/components/SyncStatus";
-import PricingPlans from "@/components/PricingPlans";
+import PlanSelector from "@/components/PlanSelector";
 import ExtensionFooter from "@/components/ExtensionFooter";
 import SettingsScreen from "@/components/SettingsScreen";
+import ChatInput from "@/components/ChatInput";
 
 const planLimits: Record<string, number> = {
   free: 5,
@@ -31,7 +32,12 @@ const Index = () => {
             <ExtensionHeader />
             <LicenseKeyInput />
             <SyncStatus usedMessages={usedMessages} totalMessages={totalMessages} />
-            <PricingPlans selectedPlan={selectedPlan} onSelectPlan={setSelectedPlan} />
+            <PlanSelector 
+              selectedPlan={selectedPlan} 
+              onSelectPlan={setSelectedPlan} 
+              usedMessages={usedMessages}
+            />
+            <ChatInput />
             <ExtensionFooter onSettingsClick={() => setShowSettings(true)} />
           </>
         )}
