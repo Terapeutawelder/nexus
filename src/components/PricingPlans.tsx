@@ -54,9 +54,12 @@ const plans: Plan[] = [
   },
 ];
 
-const PricingPlans = () => {
-  const [selectedPlan, setSelectedPlan] = useState<string>("free");
+interface PricingPlansProps {
+  selectedPlan: string;
+  onSelectPlan: (planId: string) => void;
+}
 
+const PricingPlans = ({ selectedPlan, onSelectPlan }: PricingPlansProps) => {
   return (
     <div className="px-6 py-5">
       <div className="flex items-center justify-between mb-4">
@@ -65,7 +68,9 @@ const PricingPlans = () => {
           <p className="text-xs text-muted-foreground">Atualize para mais sincronizações</p>
         </div>
         <div className="px-2 py-1 rounded-full bg-accent/20 border border-accent/30">
-          <span className="text-xs font-medium text-accent">Plano Atual: {plans.find(p => p.id === selectedPlan)?.name}</span>
+          <span className="text-xs font-medium text-accent">
+            Plano Atual: {plans.find(p => p.id === selectedPlan)?.name}
+          </span>
         </div>
       </div>
 
@@ -77,7 +82,7 @@ const PricingPlans = () => {
           return (
             <button
               key={plan.id}
-              onClick={() => setSelectedPlan(plan.id)}
+              onClick={() => onSelectPlan(plan.id)}
               className={cn(
                 "relative p-4 rounded-xl border-2 text-left transition-all duration-300",
                 isSelected

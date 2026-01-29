@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RefreshCw, CheckCircle2, Clock, GitBranch, ArrowUpRight } from "lucide-react";
+import { RefreshCw, CheckCircle2, Clock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +39,12 @@ const recentSyncs: SyncItem[] = [
   },
 ];
 
-const SyncStatus = () => {
+interface SyncStatusProps {
+  usedMessages: number;
+  totalMessages: number;
+}
+
+const SyncStatus = ({ usedMessages, totalMessages }: SyncStatusProps) => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSync = () => {
@@ -47,17 +52,14 @@ const SyncStatus = () => {
     setTimeout(() => setIsSyncing(false), 2000);
   };
 
+  const percentage = (usedMessages / totalMessages) * 100;
+
   return (
     <div className="px-6 py-5 border-b border-border">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-            <GitBranch className="w-4 h-4 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">Sincronização</h2>
-            <p className="text-xs text-muted-foreground">3/5 mensagens usadas</p>
-          </div>
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">Sincronização</h2>
+          <p className="text-xs text-muted-foreground">{usedMessages}/{totalMessages} mensagens usadas</p>
         </div>
         
         <Button
@@ -75,12 +77,12 @@ const SyncStatus = () => {
       <div className="mb-4">
         <div className="flex justify-between text-xs mb-1.5">
           <span className="text-muted-foreground">Uso mensal</span>
-          <span className="text-foreground font-medium">3/5 sincronizações</span>
+          <span className="text-foreground font-medium">{usedMessages}/{totalMessages}</span>
         </div>
         <div className="h-2 rounded-full bg-secondary overflow-hidden">
           <div 
             className="h-full rounded-full gradient-primary transition-all duration-500"
-            style={{ width: "60%" }}
+            style={{ width: `${percentage}%` }}
           />
         </div>
       </div>
@@ -107,7 +109,7 @@ const SyncStatus = () => {
               <div>
                 <p className="text-xs font-medium text-foreground">{sync.action}</p>
                 <p className="text-[10px] text-muted-foreground">
-                  {sync.source} <ArrowUpRight className="w-2.5 h-2.5 inline" /> {sync.target}
+                  {sync.source} <ArrowRight className="w-2.5 h-2.5 inline" /> {sync.target}
                 </p>
               </div>
             </div>
