@@ -1,1 +1,1 @@
-"Olá, teste de escrita do Nexus!"
+Olá Mundo! O Nexus agora tem cérebro de verdade
